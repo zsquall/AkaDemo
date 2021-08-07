@@ -1,0 +1,162 @@
+[
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/mem_clr.co", 
+            "encrypt/mem_clr.c"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/mem_clr.c"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/sha256.co", 
+            "encrypt/sha256.c"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/sha256.c"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./main.co", 
+            "main.c"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "main.c"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/md5.o", 
+            "encrypt/md5.cpp"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/md5.cpp"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./auth.o", 
+            "auth.cpp"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "auth.cpp"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/sha512.co", 
+            "encrypt/sha512.c"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/sha512.c"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/base64.o", 
+            "encrypt/base64.cpp"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/base64.cpp"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/hex.o", 
+            "encrypt/hex.cpp"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/hex.cpp"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./encrypt/aka.o", 
+            "encrypt/aka.cpp"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "encrypt/aka.cpp"
+    }, 
+    {
+        "arguments": [
+            "g++", 
+            "-c", 
+            "-I", 
+            ".", 
+            "-I", 
+            "./encrypt/", 
+            "-g", 
+            "-o", 
+            "build/obj/./digest.o", 
+            "digest.cpp"
+        ], 
+        "directory": "/BuildHome/zsquall/akaDemo", 
+        "file": "digest.cpp"
+    }
+]

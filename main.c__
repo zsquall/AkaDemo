@@ -1,0 +1,206 @@
+#include <stdio.h>
+#include <string.h>
+#include "encrypt/base64.h"
+#include "encrypt/aka.h"
+//#include "encrypt/md5.h"
+#include "digest.hpp"
+
+static Digest* digest;
+void printBin(const char* tag, unsigned char* buf, int len)
+{
+    printf("%s:", tag);
+    int i = 0;
+    for(i = 0; i < len; i++)
+    {
+        printf("%02x ", (unsigned char)buf[i]);
+    }
+    printf("\r\n");
+}
+
+static int CharToInt(unsigned char c)
+{
+    if(c >= '0' && c <= '9')
+    {
+        return c - '0';
+    }
+    else if(c >= 'a' && c <= 'z')
+    {
+        return c - 'a' + 10;
+    }
+}
+static char intToChar(int i)
+{
+    if(i <= 9)
+    {
+        return i + '0';
+    }
+    else
+    {
+        return i - 10 + 'a';
+    }
+}
+
+int hexStrToBin(unsigned char* source, unsigned char* obj)
+{
+    int j = 0;
+    for(int i = 0; i < strlen((char*)source); i ++)
+    {
+        j = i/2;
+        int k = i % 2;
+        obj[j] = (obj[j] << 4) | (CharToInt(source[i])) ;
+    }
+    return j+1;
+}
+
+void binToHex(unsigned char* source, int in_len, unsigned char* obj)
+{
+    int j = 0;
+    for(int i =0; i < in_len; i++)
+    {
+        int big = source[i] >> 4;
+        int small = source[i] & 0x0F;
+        obj[j] = intToChar(big);
+        obj[j+1] = intToChar(small);
+        j+=2;
+    }
+    obj[j+1] = '\0';
+}
+
+int calculatePw(int version, unsigned char* nonce, unsigned char* sharekey, unsigned char* pw)
+{
+    unsigned char nonce_decode[100] = "";
+    unsigned char sharekey_bin[16] = "";
+    memset(sharekey_bin, 0 , sizeof(char)*16);
+    int nonce_len = base64_decode(nonce, nonce_decode);
+    int len = hexStrToBin(sharekey, sharekey_bin);
+
+    unsigned char rnd[16];
+    unsigned char sqnAk[6];
+    unsigned char sqn[6];
+    unsigned char ak[6];
+    unsigned char ik[16];
+    unsigned char ck[16];
+    unsigned char amf[2];
+    unsigned char mac[8];
+    unsigned char res[8];
+    unsigned char xmac[8];
+
+    memcpy(rnd, nonce_decode, 16);
+    memcpy(sqnAk, nonce_decode+16, 6);
+    memcpy(amf, nonce_decode+22, 2);
+    memcpy(mac, nonce_decode+24, 8);
+
+    f2345((unsigned char*)sharekey_bin, (unsigned char*)rnd, (unsigned char*)res, (unsigned char*)ck, (unsigned char*)ik, (unsigned char*)ak);
+    printBin("sharekey_bin", (unsigned char*)sharekey_bin, 16);
+    printBin("rnd", rnd, 16);
+    printBin("res", res, 8);
+    printBin("ik", ik, 16);
+    printBin("ck", ck, 16);
+    for(int i =0 ; i < 6; i++)
+    {
+        sqn[i] = sqnAk[i] ^ ak[i];
+    }
+    f1((unsigned char*)sharekey_bin, (unsigned char*)rnd, (unsigned char*)sqn, (unsigned char*)amf, (unsigned char*)xmac);
+    printBin("xmac", xmac, 8);
+    printBin("mac", mac, 8);
+
+    unsigned char resIkCk[40];
+    memcpy(resIkCk, res, 8);
+    memcpy(resIkCk+8, ik, 16);
+    memcpy(resIkCk+24, ck, 16);
+    printBin("res+ik+ck", resIkCk, 40);
+    unsigned char data[] = "http-digest-akav2-password";
+    unsigned char digest[16];
+    unsigned char hexResIkCk[100];
+    binToHex(resIkCk, 40, hexResIkCk);
+    printf("squall %s\r\n", hexResIkCk);
+    hmac_md5_digest(data, strlen((const char*)data), resIkCk, 40, digest);
+    //hmac_md5_digest( resIkCk, 40, data, strlen((const char*)data), digest);
+    printBin("digest", digest, 16);
+    unsigned char digest_base64[30];
+    base64_encode(digest, 16, digest_base64);
+    printf("%s\r\n", digest_base64);
+    if(version == 1)
+    {
+        memcpy(pw, res, 8);
+        return 8;
+    }
+    else
+    {
+        memcpy(pw, digest_base64, strlen((char*)digest_base64));
+        return strlen((char*)digest_base64);
+    }
+}
+
+int calculateResp(unsigned char* pw, int pwLen)
+{
+    /************input************/
+    unsigned char usr_name[] = "13288615556";
+    unsigned char realm[] = "qd.lucentlab.com";
+    unsigned char method[] = "REGISTER";
+    unsigned char uri[] = "sip:135.252.37.124";
+    unsigned char nc[] = "00000001";
+    unsigned char cnonce[] = "26c-6b88-3b19438";
+    unsigned char qop[] = "auth";
+    unsigned char nonce[]= "DCwjTAwsI0wMLCNMDCwjTA197pxU6rm5y+6F0vWNaGI=";
+    /************input************/
+
+    unsigned char ha1[16];
+    MD5_CTX tctx;
+    MD5Init(&tctx);
+    MD5Update(&tctx, usr_name, strlen((char*)usr_name));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, realm, strlen((char*)realm));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, pw, pwLen);
+    MD5Final(ha1, &tctx);
+    printBin("ha1", ha1, 16);
+    unsigned char hexHa1[33];
+    binToHex(ha1, 16, hexHa1);
+    printf("%s\r\n", hexHa1);
+
+    unsigned char ha2[16];
+    MD5Init(&tctx);
+    MD5Update(&tctx, method, strlen((char*)method));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, uri, strlen((char*)uri));
+    MD5Final(ha2, &tctx);
+    printBin("ha2", ha2, 16);
+    unsigned char hexHa2[33];
+    binToHex(ha2, 16, hexHa2);
+    printf("%s\r\n", hexHa2);
+
+    unsigned char response_bin[16];
+    MD5Init(&tctx);
+    MD5Update(&tctx, hexHa1, 32);
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, nonce, strlen((char*)nonce));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, nc, strlen((char*)nc));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, cnonce, strlen((char*)cnonce));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, qop, strlen((char*)qop));
+    MD5Update(&tctx, (unsigned char*)":", 1);
+    MD5Update(&tctx, hexHa2, 32);
+    MD5Final(response_bin, &tctx);
+    printBin("response_bin", response_bin, 16);
+
+    return 0;
+}
+
+int main()
+{
+    digest = new MD5_Digest();
+    unsigned char nonce[]= "DCwjTAwsI0wMLCNMDCwjTA197pxU6rm5y+6F0vWNaGI=";
+    unsigned char sharekey[] = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    unsigned char pw[100];
+    int pwLen = calculatePw(2, nonce, sharekey, pw);
+    pw[pwLen] = '\0';
+    printf("%s\r\n", pw);
+    calculateResp(pw, pwLen);
+
+    return 0;
+}
+
+
